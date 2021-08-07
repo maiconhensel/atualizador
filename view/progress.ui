@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='utf-8'?>
+<interface version="1.1">
+  <object class="tk.Toplevel" id="toplevel1">
+    <property name="geometry">600x225</property>
+    <property name="height">200</property>
+    <property name="relief">flat</property>
+    <property name="title" translatable="yes">Atualizador</property>
+    <property name="width">200</property>
+    <child>
+      <object class="tk.Frame" id="frame2">
+        <property name="background">#5B2E90</property>
+        <property name="height">225</property>
+        <property name="padx">20</property>
+        <property name="pady">2</property>
+        <property name="width">600</property>
+        <layout manager="grid">
+          <property name="column">0</property>
+          <property name="propagate">False</property>
+          <property name="row">0</property>
+        </layout>
+        <child>
+          <object class="tk.Label" id="label1">
+            <property name="background">#5B2E90</property>
+            <property name="image">logo-linx.png</property>
+            <property name="text" translatable="yes">label1</property>
+            <layout manager="grid">
+              <property name="column">0</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+              <property name="rowspan">4</property>
+              <property name="sticky">w</property>
+              <property type="col" id="1" name="pad">0</property>
+              <property type="row" id="0" name="pad">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="ttk.Progressbar" id="progressbar1">
+            <property name="length">552</property>
+            <property name="orient">horizontal</property>
+            <property name="value">50</property>
+            <property name="variable">int:status_progress</property>
+            <layout manager="grid">
+              <property name="column">0</property>
+              <property name="columnspan">2</property>
+              <property name="ipady">8</property>
+              <property name="propagate">True</property>
+              <property name="row">6</property>
+              <property name="sticky">w</property>
+              <property type="col" id="1" name="pad">0</property>
+              <property type="row" id="6" name="pad">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="label5">
+            <property name="anchor">e</property>
+            <property name="background">#5B2E90</property>
+            <property name="font">{Segoe UI} 20 {bold}</property>
+            <property name="foreground">#ffffff</property>
+            <property name="justify">right</property>
+            <property name="text" translatable="yes">Linx Postos POS</property>
+            <property name="textvariable">string:produto_txt</property>
+            <layout manager="grid">
+              <property name="column">1</property>
+              <property name="propagate">False</property>
+              <property name="row">0</property>
+              <property name="sticky">e</property>
+              <property type="col" id="1" name="pad">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="label6">
+            <property name="anchor">e</property>
+            <property name="background">#5B2E90</property>
+            <property name="font">{Segoe UI} 12 {}</property>
+            <property name="foreground">#FF7100</property>
+            <property name="text" translatable="yes">1.1.1.1</property>
+            <property name="textvariable">string:versao_txt</property>
+            <layout manager="grid">
+              <property name="column">1</property>
+              <property name="propagate">True</property>
+              <property name="row">1</property>
+              <property name="sticky">e</property>
+              <property type="col" id="1" name="pad">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="label7">
+            <property name="anchor">e</property>
+            <property name="background">#5B2E90</property>
+            <property name="font">{Segoe UI} 12 {}</property>
+            <property name="foreground">#ffffff</property>
+            <property name="text" translatable="yes">Iniciando atualizacao...</property>
+            <property name="textvariable">string:status_txt</property>
+            <layout manager="grid">
+              <property name="column">0</property>
+              <property name="columnspan">2</property>
+              <property name="ipady">0</property>
+              <property name="pady">3</property>
+              <property name="propagate">True</property>
+              <property name="row">5</property>
+              <property name="sticky">e</property>
+              <property type="col" id="1" name="pad">0</property>
+              <property type="row" id="4" name="pad">0</property>
+              <property type="row" id="5" name="minsize">0</property>
+              <property type="row" id="5" name="pad">0</property>
+              <property type="row" id="5" name="weight">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="label8">
+            <property name="background">#5B2E90</property>
+            <property name="height">3</property>
+            <layout manager="grid">
+              <property name="column">1</property>
+              <property name="propagate">False</property>
+              <property name="row">3</property>
+              <property type="col" id="1" name="pad">0</property>
+              <property type="row" id="3" name="pad">0</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
