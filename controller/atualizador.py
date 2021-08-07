@@ -1,14 +1,22 @@
 import os
 import time
+import threading
+from tkinter import messagebox
+from view.progress import ProgressApp
 
 class Atualizador:
 	def __init__(self, ws, current_dir, *args, **kwargs):
 		self.ws = ws
 		self.current_dir = current_dir
+		self.statusView = ProgressApp()
 
 	def download(self):
+		threading.Thread(target=self.download_aux).start()
+		self.statusView.run()
+
+	def download_aux(self):
 		self.ws.log.info('Iniciando Download')
-		import pdb; pdb.set_trace()
+
 		if not os.path.exists(os.sep.join([self.current_dir, 'update'])):
 			os.mkdir(os.sep.join([self.current_dir, 'update']))
 
@@ -17,10 +25,17 @@ class Atualizador:
 			self.ws.log.info(i)
 			f.write(str(i) + '\n')
 			time.sleep(.1)
-			
+			self.statusView.set_statusbar_percent(i)
+			self.statusView.set_status_txt(i)
+
 		f.close()
+		self.statusView.stop()
 		
 	def update(self):
+		threading.Thread(target=self.update_aux).start()
+		self.statusView.run()
+
+	def update_aux(self):
 		self.ws.log.info('Iniciando Update')
 
 		if not os.path.exists(os.sep.join([self.current_dir, 'update'])):
@@ -32,5 +47,10 @@ class Atualizador:
 		for i in f.readlines():
 			self.ws.log.info(i)
 			time.sleep(.1)
+			self.statusView.set_statusbar_percent(i)
+			self.statusView.set_status_txt(float(i.strip()))
+
+		messagebox.showinfo(message='Atualização concluída!')
+		self.statusView.stop()
 	
 
