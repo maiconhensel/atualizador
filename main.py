@@ -2,8 +2,6 @@ import logging
 import os
 import sys
 
-from controller.atualizador import Atualizador
-
 if __name__ == '__main__':
 	from utils.ws import WS
 
@@ -17,21 +15,26 @@ if __name__ == '__main__':
 
 	ws.load_key(cur_dir)
 
-	A = Atualizador(ws, cur_dir)
-
 	ws.log.info(os.listdir(cur_dir))
 
-	if len(sys.argv) > 1 and ws.key:
-		if '--download' in sys.argv:
-			ws.log.info('Parâmetro --download')
-			A.download()
+	if ws.key:
+		hidden = False
+		if '--hidden' in sys.argv:
+			sys.argv.remove('--hidden')
+			hidden = True
 
-		if '--update' in sys.argv:
-			ws.log.info('Parâmetro --update')
-			A.update()
+		if len(sys.argv) <= 1:
+			sys.argv.extend([
+				'--download',
+				'--update',
+			])
+
+		from view.progress import ProgressApp
+
+		ProgressApp(ws, cur_dir, hidden).run(*sys.argv)
 
 	else:
-		ws.download_key({'empresa_cnpj':'54517628001402', 'senha': '77462691', 'host_name': 'desktop-maicon', 'host_key': 'RPJJ-LLBL-MIIN-IKEP'})
-		ws.log.info('instalador')
+		from view.cadastro import CadastroApp
+		CadastroApp(ws).run()
 	
 

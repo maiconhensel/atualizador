@@ -27,6 +27,7 @@ pyz = PYZ(
 a.datas += [
     ('resources\\logo_linx.png','.\\resources\\logo_linx.png', 'Data'),
     ('resources\\logo-linx.png','.\\resources\\logo-linx.png', 'Data'),
+    ('resources\\logo.ico','.\\resources\\logo.ico', 'Data'),
 ]
 
 exe = EXE(pyz,
@@ -35,7 +36,7 @@ exe = EXE(pyz,
 	a.zipfiles,
 	a.datas,  
 	[],
-	name='atualizador5',
+	name='atualizador',
 	debug=False,
 	bootloader_ignore_signals=False,
 	strip=False,

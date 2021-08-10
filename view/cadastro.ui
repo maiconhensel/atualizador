@@ -1,0 +1,376 @@
+<?xml version='1.0' encoding='utf-8'?>
+<interface version="1.1">
+  <object class="tk.Toplevel" id="toplevel1">
+    <property name="background">#5B2E90</property>
+    <property name="geometry">536x455</property>
+    <property name="height">200</property>
+    <property name="maxsize">536|455</property>
+    <property name="minsize">536|455</property>
+    <property name="padx">5</property>
+    <property name="pady">3</property>
+    <property name="title" translatable="yes">Linx Postos Installer</property>
+    <property name="width">200</property>
+    <child>
+      <object class="tk.LabelFrame" id="labelframe3">
+        <property name="background">#5B2E90</property>
+        <property name="foreground">#ffffff</property>
+        <property name="height">120</property>
+        <property name="text" translatable="yes">Cadastro</property>
+        <property name="width">526</property>
+        <layout manager="grid">
+          <property name="column">0</property>
+          <property name="propagate">False</property>
+          <property name="row">1</property>
+        </layout>
+        <child>
+          <object class="tk.Label" id="label2">
+            <property name="anchor">w</property>
+            <property name="background">#5B2E90</property>
+            <property name="foreground">#ffffff</property>
+            <property name="justify">right</property>
+            <property name="padx">2</property>
+            <property name="pady">2</property>
+            <property name="text" translatable="yes">CNPJ:</property>
+            <layout manager="grid">
+              <property name="column">0</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="label3">
+            <property name="anchor">w</property>
+            <property name="background">#5B2E90</property>
+            <property name="foreground">#ffffff</property>
+            <property name="justify">right</property>
+            <property name="padx">2</property>
+            <property name="pady">2</property>
+            <property name="text" translatable="yes">Senha:</property>
+            <layout manager="grid">
+              <property name="column">0</property>
+              <property name="propagate">True</property>
+              <property name="row">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Entry" id="ed_senha">
+            <property name="show">•</property>
+            <layout manager="grid">
+              <property name="column">1</property>
+              <property name="propagate">True</property>
+              <property name="row">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="ttk.Separator" id="separator1">
+            <property name="orient">vertical</property>
+            <layout manager="grid">
+              <property name="column">3</property>
+              <property name="padx">4</property>
+              <property name="pady">0</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+              <property name="rowspan">4</property>
+              <property name="sticky">ns</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Button" id="bt_consultar">
+            <property name="justify">center</property>
+            <property name="padx">0</property>
+            <property name="text" translatable="yes">Consultar</property>
+            <property name="width">17</property>
+            <bind sequence="&lt;1&gt;" handler="bt_consultar_clicked" add="" />
+            <layout manager="grid">
+              <property name="column">1</property>
+              <property name="propagate">False</property>
+              <property name="row">2</property>
+              <property type="row" id="2" name="pad">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Entry" id="ed_cnpj">
+            <layout manager="grid">
+              <property name="column">1</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="label4">
+            <property name="anchor">w</property>
+            <property name="background">#5B2E90</property>
+            <property name="foreground">#ffffff</property>
+            <property name="justify">left</property>
+            <property name="text" translatable="yes">Razão Social:</property>
+            <property name="width">47</property>
+            <layout manager="grid">
+              <property name="column">4</property>
+              <property name="columnspan">2</property>
+              <property name="padx">2</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="lb_razao_social">
+            <property name="anchor">w</property>
+            <property name="background">#5B2E90</property>
+            <property name="font">TkDefaultFont</property>
+            <property name="foreground">#ffffff</property>
+            <property name="relief">flat</property>
+            <property name="text" translatable="yes">Cliente teste</property>
+            <property name="textvariable">string:razao_social</property>
+            <property name="width">47</property>
+            <layout manager="grid">
+              <property name="column">4</property>
+              <property name="columnspan">2</property>
+              <property name="padx">2</property>
+              <property name="propagate">True</property>
+              <property name="row">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="label6">
+            <property name="anchor">w</property>
+            <property name="background">#5B2E90</property>
+            <property name="font">TkDefaultFont</property>
+            <property name="foreground">#ffffff</property>
+            <property name="text" translatable="yes">CNPJ:</property>
+            <property name="width">23</property>
+            <layout manager="grid">
+              <property name="column">4</property>
+              <property name="padx">1</property>
+              <property name="propagate">True</property>
+              <property name="row">2</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="lb_cnpj">
+            <property name="anchor">w</property>
+            <property name="background">#5B2E90</property>
+            <property name="compound">top</property>
+            <property name="foreground">#ffffff</property>
+            <property name="text" translatable="yes">54.517.628/0014-02</property>
+            <property name="textvariable">string:cnpj</property>
+            <property name="width">23</property>
+            <layout manager="grid">
+              <property name="column">4</property>
+              <property name="padx">1</property>
+              <property name="propagate">True</property>
+              <property name="row">3</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="label8">
+            <property name="anchor">w</property>
+            <property name="background">#5B2E90</property>
+            <property name="foreground">#ffffff</property>
+            <property name="text" translatable="yes">Situação:</property>
+            <property name="width">22</property>
+            <layout manager="grid">
+              <property name="column">5</property>
+              <property name="propagate">True</property>
+              <property name="row">2</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="lb_situacao">
+            <property name="anchor">w</property>
+            <property name="background">#5B2E90</property>
+            <property name="foreground">#ffffff</property>
+            <property name="text" translatable="yes">Ativo (01/01/2021 01:01)</property>
+            <property name="textvariable">string:situacao</property>
+            <property name="width">22</property>
+            <layout manager="grid">
+              <property name="column">5</property>
+              <property name="propagate">True</property>
+              <property name="row">3</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="tk.LabelFrame" id="labelframe4">
+        <property name="background">#5B2E90</property>
+        <property name="foreground">#ffffff</property>
+        <property name="height">327</property>
+        <property name="padx">2</property>
+        <property name="text" translatable="yes">Produtos</property>
+        <property name="width">526</property>
+        <layout manager="grid">
+          <property name="column">0</property>
+          <property name="propagate">False</property>
+          <property name="row">2</property>
+        </layout>
+        <child>
+          <object class="tk.Button" id="button10">
+            <property name="anchor">center</property>
+            <property name="compound">top</property>
+            <property name="height">90</property>
+            <property name="image">logo.png</property>
+            <property name="text" translatable="yes">Linx Postos POS</property>
+            <property name="width">90</property>
+            <layout manager="grid">
+              <property name="column">0</property>
+              <property name="padx">3</property>
+              <property name="pady">3</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Button" id="button11">
+            <property name="anchor">center</property>
+            <property name="compound">top</property>
+            <property name="height">90</property>
+            <property name="image">logo.png</property>
+            <property name="text" translatable="yes">button11</property>
+            <property name="width">90</property>
+            <layout manager="grid">
+              <property name="column">0</property>
+              <property name="padx">2</property>
+              <property name="pady">2</property>
+              <property name="propagate">True</property>
+              <property name="row">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Button" id="button12">
+            <property name="anchor">center</property>
+            <property name="compound">top</property>
+            <property name="font">TkFixedFont</property>
+            <property name="height">90</property>
+            <property name="image">logo.png</property>
+            <property name="text" translatable="yes">AutoAtendimentodd</property>
+            <property name="width">90</property>
+            <property name="wraplength">85</property>
+            <layout manager="grid">
+              <property name="column">1</property>
+              <property name="padx">3</property>
+              <property name="pady">3</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Button" id="button13">
+            <property name="anchor">center</property>
+            <property name="compound">top</property>
+            <property name="height">90</property>
+            <property name="image">logo.png</property>
+            <property name="text" translatable="yes">KDS</property>
+            <property name="width">90</property>
+            <layout manager="grid">
+              <property name="column">2</property>
+              <property name="padx">3</property>
+              <property name="pady">3</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Button" id="button14">
+            <property name="compound">top</property>
+            <property name="height">90</property>
+            <property name="image">logo.png</property>
+            <property name="text" translatable="yes">button14</property>
+            <property name="width">90</property>
+            <layout manager="grid">
+              <property name="column">3</property>
+              <property name="padx">3</property>
+              <property name="pady">3</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Button" id="button15">
+            <property name="anchor">center</property>
+            <property name="compound">top</property>
+            <property name="height">90</property>
+            <property name="image">logo.png</property>
+            <property name="justify">left</property>
+            <property name="text" translatable="yes">button15</property>
+            <property name="width">90</property>
+            <layout manager="grid">
+              <property name="column">1</property>
+              <property name="padx">2</property>
+              <property name="pady">2</property>
+              <property name="propagate">True</property>
+              <property name="row">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Button" id="button16">
+            <property name="anchor">center</property>
+            <property name="compound">top</property>
+            <property name="height">90</property>
+            <property name="image">logo.png</property>
+            <property name="text" translatable="yes">button16</property>
+            <property name="width">90</property>
+            <layout manager="grid">
+              <property name="column">2</property>
+              <property name="padx">2</property>
+              <property name="pady">2</property>
+              <property name="propagate">True</property>
+              <property name="row">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Button" id="button17">
+            <property name="anchor">center</property>
+            <property name="compound">top</property>
+            <property name="height">90</property>
+            <property name="image">logo.png</property>
+            <property name="text" translatable="yes">button17</property>
+            <property name="width">90</property>
+            <layout manager="grid">
+              <property name="column">5</property>
+              <property name="padx">3</property>
+              <property name="pady">3</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Button" id="button18">
+            <property name="anchor">center</property>
+            <property name="compound">top</property>
+            <property name="height">90</property>
+            <property name="image">logo.png</property>
+            <property name="text" translatable="yes">button18</property>
+            <property name="width">90</property>
+            <layout manager="grid">
+              <property name="column">0</property>
+              <property name="padx">2</property>
+              <property name="pady">2</property>
+              <property name="propagate">True</property>
+              <property name="row">8</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

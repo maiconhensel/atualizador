@@ -227,7 +227,7 @@ class LinxPostosKeyRequest:
 			params['key'] = open(info.fname, 'rb').read()
 
 		else:
-			for k, v in [('empresa_cnpj', 'CNPJ do posto'), ('senha', 'Senha'), ('host_name', 'Nome da Estação')]:
+			for k, v in [('empresa_cnpj', 'CNPJ'), ('senha', 'Senha'), ('host_name', 'Nome da Estação')]:
 				if not info.get(k):
 					raise LinxPostosKeyRequestException("Campo %s não informado! Informe o campo para realizar a solicitação." % v)
 
