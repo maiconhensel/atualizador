@@ -9,12 +9,12 @@ from PIL.ImageTk import PhotoImage
 from tkinter import Tk, Frame, Label, IntVar, StringVar, messagebox
 from tkinter.ttk import Progressbar
 
-from controller.atualizador import Atualizador
+from controller import Atualizador
 
 class ProgressApp:
-	def __init__(self, ws, current_dir, hidden=False):
+	def __init__(self, ws, main_dir, hidden=False):
 		self.ws = ws
-		self.current_dir = current_dir
+		self.main_dir = main_dir
 
 		self.visible = not hidden
 
@@ -40,12 +40,14 @@ class ProgressApp:
 		self.label1.grid(column='0', row='0', rowspan='4', sticky='w')
 		self.label1.rowconfigure('0', pad='0')
 		self.label1.columnconfigure('1', pad='0')
+
 		self.progressbar1 = Progressbar(self.frame2)
-		self.status_progress = IntVar(value=50)
-		self.progressbar1.configure(length='552', orient='horizontal', value='50', variable=self.status_progress)
+		self.status_progress = IntVar(value=0)
+		self.progressbar1.configure(length='552', orient='horizontal', variable=self.status_progress)
 		self.progressbar1.grid(column='0', columnspan='2', ipady='8', row='6', sticky='w')
 		self.progressbar1.rowconfigure('6', pad='0')
 		self.progressbar1.columnconfigure('1', pad='0')
+		
 		self.label5 = Label(self.frame2)
 		self.produto_txt = StringVar(value='Linx Postos POS')
 		self.label5.configure(anchor='e', background='#5B2E90', font='{Segoe UI} 20 {bold}', foreground='#ffffff')
@@ -53,39 +55,43 @@ class ProgressApp:
 		self.label5.grid(column='1', row='0', sticky='e')
 		self.label5.grid_propagate(0)
 		self.label5.columnconfigure('1', pad='0')
+		
 		self.label6 = Label(self.frame2)
 		self.versao_txt = StringVar(value='1.1.1.1')
 		self.label6.configure(anchor='e', background='#5B2E90', font='{Segoe UI} 12 {}', foreground='#FF7100')
 		self.label6.configure(text='1.1.1.1', textvariable=self.versao_txt)
 		self.label6.grid(column='1', row='1', sticky='e')
 		self.label6.columnconfigure('1', pad='0')
+		
 		self.label7 = Label(self.frame2)
 		self.status_txt = StringVar(value='Iniciando atualizacao...')
-		self.label7.configure(anchor='e', background='#5B2E90', font='{Segoe UI} 12 {}', foreground='#ffffff')
+		self.label7.configure(anchor='e', background='#5B2E90', font='{Segoe UI} 8 {}', foreground='#ffffff')
 		self.label7.configure(text='Iniciando atualizacao...', textvariable=self.status_txt)
 		self.label7.grid(column='0', columnspan='2', ipady='0', pady='3', row='5', sticky='e')
 		self.label7.rowconfigure('4', pad='0')
 		self.label7.rowconfigure('5', minsize='0', pad='0', weight='0')
 		self.label7.columnconfigure('1', pad='0')
+		
 		self.label8 = Label(self.frame2)
 		self.label8.configure(background='#5B2E90', height='3')
 		self.label8.grid(column='1', row='3')
 		self.label8.grid_propagate(0)
 		self.label8.rowconfigure('3', pad='0')
 		self.label8.columnconfigure('1', pad='0')
+		
 		self.frame2.configure(background='#5B2E90', height='225', padx='20', pady='2')
 		self.frame2.configure(width='600')
 		self.frame2.grid(column='0', row='0')
 		self.frame2.grid_propagate(0)
-		self.mainwindow.configure(height='225', relief='flat', width='600')
+		
+		self.mainwindow.configure(relief='flat')
+		
+		# Positions the window in the center of the page.
 		windowWidth = 600
 		windowHeight = 225
-		
-		# Gets both half the screen width/height and window width/height
 		positionRight = int(self.mainwindow.winfo_screenwidth()/2 - windowWidth/2)
 		positionDown = int(self.mainwindow.winfo_screenheight()/2 - windowHeight/2)
 		
-		# Positions the window in the center of the page.
 		self.mainwindow.geometry("{}x{}+{}+{}".format(windowWidth, windowHeight, positionRight, positionDown))
 		
 		self.mainwindow.title('Atualizador')
@@ -118,7 +124,7 @@ class ProgressApp:
 		self.status_progress.set(value)
 
 	def set_status_txt(self, text):
-		self.status_txt.set('Total %.2f%%' % text)
+		self.status_txt.set(text)
 	
 	def set_produto_txt(self, text):
 		self.produto_txt.set(text)
@@ -139,18 +145,22 @@ class ProgressApp:
 		if '--download' in args:
 			self.ws.log.info('Parâmetro --download')
 			try:
-				A.download()
+				if not A.download():
+					self.exit()
 				msg = 'Download concluído!'
-			except:
-				return
+			except Exception as e:
+				messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message=str(e), icon='error')
+				self.exit()
 
 		if '--update' in args:
 			self.ws.log.info('Parâmetro --update')
 			try:
-				A.update()
+				if not A.update():
+					self.exit()
 				msg = 'Atualização concluída!'
 			except:
-				return
+				messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message=str(e), icon='error')
+				self.exit()
 
 		if msg and self.visible:
 			messagebox.showinfo(parent=self.mainwindow, title='Atenção', message=msg, icon='info')
