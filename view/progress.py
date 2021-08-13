@@ -158,7 +158,7 @@ class ProgressApp:
 				if not A.update():
 					self.exit()
 				msg = 'Atualização concluída!'
-			except:
+			except Exception as e:
 				messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message=str(e), icon='error')
 				self.exit()
 

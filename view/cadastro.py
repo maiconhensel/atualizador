@@ -1,12 +1,15 @@
 import os
 import sys
+import time
 import traceback
+import threading
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter.ttk import Separator
 import pygubu
 from PIL import Image, ImageTk
 from tkinter import Tk, Toplevel, LabelFrame, Label, Entry, Button, StringVar, messagebox
+from utils import valida_cnpj
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 PROJECT_UI = os.path.join(PROJECT_PATH, "cadastro.ui")
@@ -36,6 +39,10 @@ class CadastroApp:
 		self.label3.configure(font="-family {Segoe UI} -size 9")
 		self.label3.grid(column='0', row='1')
 
+		self.ed_cnpj = Entry(self.labelframe3)
+		self.ed_cnpj.grid(column='1', row='0')
+		self.ed_cnpj.bind('<Key-Tab>', self.validate_cnpj)
+
 		self.ed_senha = Entry(self.labelframe3)
 		self.ed_senha.configure(show='•')
 		self.ed_senha.grid(column='1', row='1')
@@ -50,9 +57,6 @@ class CadastroApp:
 		self.bt_consultar.grid_propagate(0)
 		self.bt_consultar.rowconfigure('2', pad='0')
 		self.bt_consultar.bind('<1>', self.bt_consultar_clicked, add='')
-
-		self.ed_cnpj = Entry(self.labelframe3)
-		self.ed_cnpj.grid(column='1', row='0')
 
 		self.label4 = Label(self.labelframe3)
 		self.label4.configure(anchor='w', background='#5B2E90', foreground='#ffffff', justify='left')
@@ -149,10 +153,21 @@ class CadastroApp:
 		cnpj = self.ed_cnpj.get()
 		senha = self.ed_senha.get()
 
+		#CMW = CustomMessageWidget(self.mainwindow)
+		#CMW = Custom2App('')
+		#CMW.show_message("Baixando chave de ativação!")
+		#CMW.run()
+		#msg_win = wait(self.mainwindow, 'Baixando chave de ativação')
+		#time.sleep(5)
+		#import pdb; pdb.set_trace()
+
 		try:
 			self.ws.download_key({'empresa_cnpj': cnpj, 'senha': senha, 'host_name': self.ws.hostname, 'host_key': self.ws.sys_key})
+			#msg_win.destroy()
 		except Exception as e:
 			self.ws.log.error(traceback.format_exc())
+			#CMW.destroy()
+			#sg_win.destroy()
 			messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message=str(e), icon='error')
 			return
 
@@ -167,6 +182,12 @@ class CadastroApp:
 		for i in range(random.randrange(0, 15)):
 			self.ws.log.info(i)
 			self.make_bt_produto(str(i), 'Teste', int(i/5), i%5)
+
+	def validate_cnpj(self, event):
+		cnpj = valida_cnpj(self.ed_cnpj.get())
+		if not cnpj:
+			messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message='teste', icon='error')
+
 
 	def run(self):
 		self.mainwindow.mainloop()

@@ -4,6 +4,7 @@ import threading
 import traceback
 
 from .downloader import Downloader
+from .updater import Updater
 
 class Atualizador:
 	def __init__(self, ws, parent, *args, **kwargs):
@@ -28,21 +29,13 @@ class Atualizador:
 
 		D = Downloader(self.ws, self)
 		D.download_version()
+		return True
 		
 	def update(self):
-		self.ws.log.info('Iniciando Update')
-		return
 
 		if not os.path.exists(os.sep.join([self.main_dir, 'update'])):
-			self.ws.log.error('Diretório update não existe')
-			return
+			raise Exception('Diretório update não existe')
 
-		f = open(os.sep.join([self.main_dir, 'update', 'md5.json']), 'r')
-
-		for i in f.readlines():
-			self.ws.log.info(i)
-			time.sleep(.1)
-			self.parent.set_statusbar_percent(i)
-			self.parent.set_status_txt(float(i.strip()))
-	
-
+		U = Updater(self.ws, self)
+		U.update()
+		return True

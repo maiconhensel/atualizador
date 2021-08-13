@@ -83,6 +83,7 @@ class Downloader:
 			para posteriomente mover para a pasta principal, quando a atualização for aceita pelo usuário.
 		"""
 		#self.ws.services['config'].save_config({'atualizacao_versao_baixada': False})
+		#subprocess.call('"%s" psql -p 5470 -U postgres -c "%s" postgres' % (abspath('./pgsql/bin/'), sql), stdout=sys.stdout, stderr=sys.stdout)
 
 		self.ws.log.info("Baixando arquivos do servidor...")
 		self.ws.log.info("---------------------------------")
@@ -94,7 +95,16 @@ class Downloader:
 
 		#self.ws.services['config'].save_config({'atualizacao_versao_baixada': True})
 
+		self.ws.log.info("Verificando necessidade de download do MID-e")
+		if self.ws.has_mide():
+			self.__download_mide()
+
+		self.ws.log.info('Download dos arquivos da nova versão foram concluídos.')
 		return True
+
+	def __download_mide(self):
+		return
+		ws.services['mide.atualizador'].update(print, is_electron)
 
 	def __download_file(self, source_path, target_path=None):
 		"""

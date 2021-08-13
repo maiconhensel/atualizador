@@ -7,7 +7,8 @@ if __name__ == '__main__':
 
 	ws = WS()
 	ws.log.info('Args: %s' % sys.argv)
-	cur_dir = os.path.realpath(os.curdir).split(os.sep)
+
+	cur_dir = os.getcwd().split(os.sep)
 	ws.log.debug('CurDir: %s ' % cur_dir)
 
 	cur_dir = os.sep.join([x for x in cur_dir if x != 'atualizador'])

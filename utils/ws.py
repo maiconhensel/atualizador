@@ -46,3 +46,21 @@ class WS:
 
 		if self.key.get('empresa_cnpj') =='54.517.628/0014-02' and os.environ.get('LXNOTPAF'):
 			self.is_paf = False
+
+	def has_mide(self):
+		"""
+		Verifica se possui algum módulo do MID-e.
+		"""
+		modules_list = [
+			'midenfce',
+			'midenfe',
+			'midemfe',
+			'midecfe',
+		]
+
+		for module in modules_list:
+			if self.key['modules'].get(module):
+				return True
+
+		return False
+
