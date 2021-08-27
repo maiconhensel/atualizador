@@ -174,7 +174,7 @@ class ProgressApp:
 			try:
 				if not A.update():
 					self.exit()
-				msg = 'Instalação concluída!' if is_install else 'Atualização concluída!'
+				msg = 'Instalação concluída!' if self.is_install else 'Atualização concluída!'
 			except Exception as e:
 				self.ws.log.error(traceback.format_exc())
 				self.show_message_error(str(e))

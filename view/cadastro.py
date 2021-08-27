@@ -231,16 +231,25 @@ class CadastroApp:
 		if self.ws.info['env'].get('devel'):
 			install_dir = self.main_dir
 
+		if not os.path.exists(install_dir):
+			try:
+				self.ws.log.info('Criando o diretório %s' % install_dir)
+				os.mkdir(dir_name)
+			except:
+				self.ws.log.error(traceback.format_exc())
+				raise Exception('Falha ao criar o diretório %s' % install_dir)
+
+		main_dir = self.main_dir
+		if self.ws.info['env'].get('devel'):
+			main_dir = os.sep.join([x for x in self.main_dir.split(os.sep) if x != 'teste_atualizador'])
+
+		self.ws.log.info('Movendo chave de ativação para o diretório %s' % install_dir)
+		shutil.move(os.path.join(main_dir, 'linxpostospos.key'), os.sep.join([install_dir, "linxpostospos.key"]))
+
 		from view.progress import ProgressApp
 		P = ProgressApp(self.ws, install_dir, master=self.mainwindow, is_install=True)
 		P.run(*['--download', '--update'])
 		self.mainwindow.wait_window(P.mainwindow)
-
-		if self.ws.info['env'].get('devel'):
-			self.main_dir = os.sep.join([x for x in self.main_dir.split(os.sep) if x != 'teste_atualizador'])
-
-		self.ws.log.info('Movendo chave de ativação.')
-		shutil.move(os.path.join(self.main_dir, 'linxpostospos.key'), os.sep.join([install_dir, "linxpostospos.key"]))
 
 	def on_change_cnpj(self, event):
 		self.validate_cnpj(self.ed_cnpj.get())
