@@ -10,7 +10,7 @@ now = datetime.now
 oneDay = timedelta(days=1)
 oneHour = timedelta(hours=1)
 
-from .lxcrypto import LxCrypto
+from lx.lxcrypto import LxCrypto
 
 from .exceptions import LinxPostosKeyException, LinxPostosKeyExpiredException, LinxPostosKeyOutdatedException, \
 		LinxPostosKeyDemoException, LinxPostosKeyRequestException, LinxPostosKeySaveException
@@ -18,7 +18,7 @@ from .exceptions import LinxPostosKeyException, LinxPostosKeyExpiredException, L
 KEY_FILENAME = 'linxpostospos.key'
 
 # Caminho de onde salvar a chave do sistema
-WIN_KEY_PATH_LIST = ["./"]
+WIN_KEY_PATH_LIST = ["."]
 UNIX_KEY_PATH_LIST = ['/etc/', os.path.expanduser('~') + '/.sellerpdv/', '']
 
 # Padrão dos backoffice de integração...
@@ -126,6 +126,7 @@ class LinxPostosInfoKey(dict):
 		self.log.debug("Paf: %s" % self.get('paf'))
 
 	def load(self, renew=True):
+
 		self.read()
 
 		# Atualização automática da chave.
@@ -350,12 +351,10 @@ def get_key_filepath_list(name=KEY_FILENAME):
 		path_list = UNIX_KEY_PATH_LIST
 
 	ret = []
+	print(path_list)
 
 	for path in path_list:
-		ret.append('%s%s' % (path, name))
-
-	for path in path_list:
-		ret.append('%s%s' % (path, 'sellerpdv.key'))
+		ret.append(os.sep.join([path, name]))
 
 	return ret
 

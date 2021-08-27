@@ -3,20 +3,22 @@ import os
 import sys
 
 if __name__ == '__main__':
-	from utils.ws import WS
+	
+	from core.workspace import ws
 
-	ws = WS()
-	ws.log.info('Args: %s' % sys.argv)
+	print('Args: %s' % sys.argv)
 
 	cur_dir = os.getcwd().split(os.sep)
-	ws.log.debug('CurDir: %s ' % cur_dir)
+	print('CurDir: %s ' % cur_dir)
 
 	cur_dir = os.sep.join([x for x in cur_dir if x != 'atualizador'])
-	ws.log.info('CurDir: %s ' % cur_dir)
+	print('CurDir: %s ' % cur_dir)
 
-	ws.load_key(cur_dir)
+	if os.environ.get('DEVEL'):
+		cur_dir = os.sep.join([cur_dir, 'teste_atualizador'])
+		print('CurDir Devel: %s ' % cur_dir)
 
-	ws.log.info(os.listdir(cur_dir))
+	ws.load(cur_dir)
 
 	if ws.key:
 		hidden = False
@@ -24,7 +26,7 @@ if __name__ == '__main__':
 			sys.argv.remove('--hidden')
 			hidden = True
 
-		if len(sys.argv) <= 1:
+		if not '--download' in sys.argv and not '--update' in sys.argv:
 			sys.argv.extend([
 				'--download',
 				'--update',
@@ -36,6 +38,6 @@ if __name__ == '__main__':
 
 	else:
 		from view.cadastro import CadastroApp
-		CadastroApp(ws).run()
+		CadastroApp(ws, cur_dir).run()
 	
 

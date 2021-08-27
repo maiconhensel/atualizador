@@ -1,29 +1,32 @@
 import os
 import sys
-import pygubu
 import threading
 import time
+import traceback
 
 from PIL import Image
 from PIL.ImageTk import PhotoImage
-from tkinter import Tk, Frame, Label, IntVar, StringVar, messagebox
+from tkinter import Tk, Frame, Label, IntVar, StringVar, messagebox, Toplevel
 from tkinter.ttk import Progressbar
 
 from controller import Atualizador
 
 class ProgressApp:
-	def __init__(self, ws, main_dir, hidden=False):
+	def __init__(self, ws, main_dir, hidden=False, master=None, is_install=False):
 		self.ws = ws
 		self.main_dir = main_dir
+		self.master = master
 
 		self.visible = not hidden
+		self.is_install = is_install
 
 		self.configure()
 
 	def configure(self):
 
 		# Main widget
-		self.mainwindow = Tk()
+		#self.mainwindow = Tk()
+		self.mainwindow = Tk() if self.master is None else Toplevel(self.master)
 
 		if not self.visible:
 			self.hide()
@@ -49,9 +52,9 @@ class ProgressApp:
 		self.progressbar1.columnconfigure('1', pad='0')
 		
 		self.label5 = Label(self.frame2)
-		self.produto_txt = StringVar(value='Linx Postos POS')
-		self.label5.configure(anchor='e', background='#5B2E90', font='{Segoe UI} 20 {bold}', foreground='#ffffff')
-		self.label5.configure(justify='right', text='Linx Postos POS', textvariable=self.produto_txt)
+		self.produto_txt = StringVar(value=self.ws.key['appname'])
+		self.label5.configure(anchor='e', background='#5B2E90', font='{Segoe UI} 18 {bold}', foreground='#ffffff')
+		self.label5.configure(justify='right', text=self.ws.key['appname'], textvariable=self.produto_txt)
 		self.label5.grid(column='1', row='0', sticky='e')
 		self.label5.grid_propagate(0)
 		self.label5.columnconfigure('1', pad='0')
@@ -95,7 +98,12 @@ class ProgressApp:
 		self.mainwindow.geometry("{}x{}+{}+{}".format(windowWidth, windowHeight, positionRight, positionDown))
 		
 		self.mainwindow.title('Atualizador')
-		self.mainwindow.protocol("WM_DELETE_WINDOW", self.exit)
+		if self.master:
+			def teste(*arg, **kwargs):
+				pass
+			self.mainwindow.protocol("WM_DELETE_WINDOW", teste)
+		else:
+			self.mainwindow.protocol("WM_DELETE_WINDOW", self.exit)
 
 		self.logo_icon = os.sep.join([getattr(sys, '_MEIPASS', '.'), 'resources', 'logo.ico'])
 		self.ws.log.info(self.logo_icon)
@@ -105,9 +113,11 @@ class ProgressApp:
 		if not self.visible:
 			return self.__execute(*args, **kwargs)
 
-		threading.Thread(target=self.__execute, args=args, kwargs=kwargs, daemon=True).start()
+		self.thread = threading.Thread(target=self.__execute, args=args, kwargs=kwargs, daemon=True)
+		self.thread.start()
 		self.show()
-		self.mainwindow.mainloop()
+		if not self.master:
+			self.mainwindow.mainloop()
 
 	def show(self):
 		self.visible = True
@@ -119,6 +129,12 @@ class ProgressApp:
 	
 	def exit(self):
 		self.mainwindow.destroy()
+
+	def show_message_error(self, message):
+		messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message=message, icon='error')
+
+	def show_message_info(self, message):
+		messagebox.showinfo(parent=self.mainwindow, title='Atenção', message=message, icon='info')
 
 	def set_statusbar_percent(self, value):
 		self.status_progress.set(value)
@@ -149,7 +165,8 @@ class ProgressApp:
 					self.exit()
 				msg = 'Download concluído!'
 			except Exception as e:
-				messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message=str(e), icon='error')
+				self.ws.log.error(traceback.format_exc())
+				self.show_message_error(str(e))
 				self.exit()
 
 		if '--update' in args:
@@ -157,13 +174,14 @@ class ProgressApp:
 			try:
 				if not A.update():
 					self.exit()
-				msg = 'Atualização concluída!'
+				msg = 'Instalação concluída!' if is_install else 'Atualização concluída!'
 			except Exception as e:
-				messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message=str(e), icon='error')
+				self.ws.log.error(traceback.format_exc())
+				self.show_message_error(str(e))
 				self.exit()
 
 		if msg and self.visible:
-			messagebox.showinfo(parent=self.mainwindow, title='Atenção', message=msg, icon='info')
+			self.show_message_info(msg)
 
 		self.exit()
 

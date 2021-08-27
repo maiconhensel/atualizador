@@ -1,5 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+backup/
+teste_atualizador/
 tests_code/
 update/
 update - Copia/
@@ -130,3 +132,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+linxpostospos.key

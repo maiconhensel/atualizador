@@ -85,7 +85,7 @@ class Downloader:
 		#self.ws.services['config'].save_config({'atualizacao_versao_baixada': False})
 		#subprocess.call('"%s" psql -p 5470 -U postgres -c "%s" postgres' % (abspath('./pgsql/bin/'), sql), stdout=sys.stdout, stderr=sys.stdout)
 
-		self.ws.log.info("Baixando arquivos do servidor...")
+		self.ws.log.info("Baixando arquivos do servidor no diretório %s" % self.main_dir)
 		self.ws.log.info("---------------------------------")
 
 		self.__walk_http()

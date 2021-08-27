@@ -1,23 +1,29 @@
 import os
 import sys
+import json
+import requests
+import shutil
 import time
 import traceback
 import threading
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter.ttk import Separator
-import pygubu
+#import pygubu
 from PIL import Image, ImageTk
 from tkinter import Tk, Toplevel, LabelFrame, Label, Entry, Button, StringVar, messagebox
 from utils import valida_cnpj
+from core.key import PRODUTO_INTRANET_MAP
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 PROJECT_UI = os.path.join(PROJECT_PATH, "cadastro.ui")
 
 class CadastroApp:
-	def __init__(self, ws, master=None):
+	def __init__(self, ws, cur_dir, master=None):
 
 		self.ws = ws
+		self.main_dir = cur_dir
+		self.cliente_dict = {}
 		# build ui
 		self.configure()
 
@@ -41,7 +47,7 @@ class CadastroApp:
 
 		self.ed_cnpj = Entry(self.labelframe3)
 		self.ed_cnpj.grid(column='1', row='0')
-		self.ed_cnpj.bind('<Key-Tab>', self.validate_cnpj)
+		self.ed_cnpj.bind('<Key-Tab>', self.on_change_cnpj)
 
 		self.ed_senha = Entry(self.labelframe3)
 		self.ed_senha.configure(show='•')
@@ -129,12 +135,21 @@ class CadastroApp:
 
 		self.bt_produto_map = {}
 
-	def make_bt_produto(self, bt_name, produto, row, column):
+	def run(self):
+		self.mainwindow.mainloop()
+
+	def show_message_error(self, message):
+		messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message=message, icon='error')
+
+	def make_bt_produto(self, bt_name, produto_dict, row, column):
 		bt_name = 'bt_%s' % bt_name
 		bt_name = 'bt_%s' % bt_name
 		img_name = 'bt_img_%s' % bt_name
 
-		button = Button(self.labelframe4)
+		def teste():
+			self.bt_instalar_clicked(produto_dict)
+
+		button = Button(self.labelframe4, command=teste)
 
 		width = height = 60
 		img = Image.open(os.sep.join([getattr(sys, '_MEIPASS', '.'), 'resources', 'logo_linx.png']))
@@ -144,7 +159,7 @@ class CadastroApp:
 
 		photoImg =  ImageTk.PhotoImage(img)
 
-		button.configure(anchor='center', compound='top', height='90', width='90', image=photoImg, text=produto, wraplength='85')
+		button.configure(anchor='center', compound='top', height='90', width='90', image=photoImg, text=produto_dict['nome'], wraplength='85')
 		button.grid(row=row, column=column, padx='3', pady='3')
 
 		self.bt_produto_map[bt_name] = (button, photoImg)
@@ -153,45 +168,129 @@ class CadastroApp:
 		cnpj = self.ed_cnpj.get()
 		senha = self.ed_senha.get()
 
+		if not self.validate_cnpj(cnpj):
+			return
+		elif not senha:
+			self.show_message_error("Senha não informada.")
+			return
+
+		for k in list(self.bt_produto_map.keys()):
+			self.bt_produto_map.pop(k)[0].destroy()
+
 		#CMW = CustomMessageWidget(self.mainwindow)
 		#CMW = Custom2App('')
 		#CMW.show_message("Baixando chave de ativação!")
 		#CMW.run()
 		#msg_win = wait(self.mainwindow, 'Baixando chave de ativação')
 		#time.sleep(5)
-		#import pdb; pdb.set_trace()
 
 		try:
-			self.ws.download_key({'empresa_cnpj': cnpj, 'senha': senha, 'host_name': self.ws.hostname, 'host_key': self.ws.sys_key})
+			resposta_dict = self.get_cliente(cnpj)
+			self.cliente_dict = resposta_dict['clientes'][0]
+			#self.ws.download_key({'empresa_cnpj': cnpj, 'senha': senha, 'host_name': self.ws.hostname, 'host_key': self.ws.sys_key})
 			#msg_win.destroy()
 		except Exception as e:
+			self.cliente_dict = {}
 			self.ws.log.error(traceback.format_exc())
 			#CMW.destroy()
 			#sg_win.destroy()
-			messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message=str(e), icon='error')
+			self.show_message_error(str(e))
 			return
 
-		self.cnpj.set(self.ws.key['empresa_cnpj'])
-		self.razao_social.set(self.ws.key['empresa_nome'])
-		self.situacao.set('Ativo' if self.ws.key['ativo'] else 'Inativo')
+		self.cnpj.set(self.cliente_dict['cpf'])
+		self.razao_social.set(self.cliente_dict['nome'])
+		self.situacao.set(f'Ativo ({self.cliente_dict["ts_status"]})' if self.cliente_dict['status'] == 2 else 'Inativo')
 
-		for k in list(self.bt_produto_map.keys()):
-			self.bt_produto_map.pop(k)[0].destroy()
+		try:
+			response_list = self.get_cliente_produtos(cnpj)
 
-		import random
-		for i in range(random.randrange(0, 15)):
-			self.ws.log.info(i)
-			self.make_bt_produto(str(i), 'Teste', int(i/5), i%5)
+			intranet_produto_map = {v: k for k, v in PRODUTO_INTRANET_MAP.items()}
+			ix = 0
+			for prod_dict in response_list:
+				if prod_dict['id'] in intranet_produto_map.keys():
+					prod_dict['app_id'] = intranet_produto_map[prod_dict['id']]
+					prod_dict['install_dir'] = prod_dict['nome'].replace(' ', '')
+					self.make_bt_produto(str(prod_dict['app_id']), prod_dict, int(ix/5), ix%5)
+					ix = ix+1 if ix < 5 else 0
 
-	def validate_cnpj(self, event):
-		cnpj = valida_cnpj(self.ed_cnpj.get())
+		except Exception as e:
+			self.show_message_error(str(e))
+
+	def bt_instalar_clicked(self, prod_dict):
+		cnpj = self.ed_cnpj.get()
+		senha = self.ed_senha.get()
+
+		try:
+			self.ws.download_key({'empresa_cnpj': cnpj, 'senha': senha, 'host_name': self.ws.hostname, 'host_key': self.ws.sys_key, 'appid': prod_dict['app_id']})
+		except Exception as e:
+			self.ws.log.error(traceback.format_exc())
+			self.show_message_error(str(e))
+			return
+
+		install_dir = os.sep.join(['C:', prod_dict['install_dir']])
+		if self.ws.info['env'].get('devel'):
+			install_dir = self.main_dir
+
+		from view.progress import ProgressApp
+		P = ProgressApp(self.ws, install_dir, master=self.mainwindow, is_install=True)
+		P.run(*['--download', '--update'])
+		self.mainwindow.wait_window(P.mainwindow)
+
+		if self.ws.info['env'].get('devel'):
+			self.main_dir = os.sep.join([x for x in self.main_dir.split(os.sep) if x != 'teste_atualizador'])
+
+		self.ws.log.info('Movendo chave de ativação.')
+		shutil.move(os.path.join(self.main_dir, 'linxpostospos.key'), os.sep.join([install_dir, "linxpostospos.key"]))
+
+	def on_change_cnpj(self, event):
+		self.validate_cnpj(self.ed_cnpj.get())
+
+	def validate_cnpj(self, cnpj):
 		if not cnpj:
-			messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message='teste', icon='error')
+			self.show_message_error("CNPJ não informado")
+			return False
 
+		cnpj = valida_cnpj(cnpj)
+		if not cnpj:
+			self.show_message_error("CNPJ informado inválido")
+			return False
 
-	def run(self):
-		self.mainwindow.mainloop()
+		return True
 
+	def get_cliente(self, cnpj):
+		return self.__request(f"http://intranet.lzt.com.br/api/cliente/{cnpj}")
+
+	def get_cliente_produtos(self, cnpj):
+		return self.__request(f"http://intranet.lzt.com.br/api/cliente/{cnpj}/produto/")
+
+	def __request(self, host):
+		try:
+			headers = {
+				'Content-Type': 'application/json',
+				'LXTOKEN': 'iwEA1WqlbEdSPhk3WxrgvPK8DIcrux2r3p4bUZUD00g'
+			}
+
+			self.ws.log.info("-SEND - Enviando dados para o webservice ---------")
+			self.ws.log.info(f"Host.........: {host}")
+			self.ws.log.debug("Headers.........: {0}".format(headers))
+			self.ws.log.debug("Method..........: GET")
+			self.ws.log.info("--------------------------------------------------")
+			tini = time.time()
+
+			response = requests.get(host, headers=headers, timeout=60)
+			self.ws.log.info("-RESPONSE - recebido em %.02f segundos." % (time.time() - tini))
+
+			if response.status_code != 200:
+				self.ws.log.critical("Status code retornado pelo webservice %s" % str(response.status_code))
+				raise Exception("Webservice retornou uma resposta inválida")
+
+			self.ws.log.info(f"{response.text}")
+			self.ws.log.info("--------------------------------------------------")
+
+			return json.loads(response.text)
+		except:
+			self.ws.log.error(traceback.format_exc())
+			raise Exception('Ocorreu um erro ao consultar o cliente.')
 
 if __name__ == '__main__':
 	from utils.ws import WS
