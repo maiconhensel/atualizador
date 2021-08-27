@@ -37,7 +37,7 @@ class WorkSpace:
 		if loadconfig:
 			self.load()
 
-	def load(self, dir_name):
+	def load(self):
 
 		self.versao = version.__version_str__
 		self.appversion = version.__appversion_str__
@@ -76,7 +76,7 @@ class WorkSpace:
 
 		self.key = {}
 		try:
-			self.load_key(True, dir_name)
+			self.load_key(True)
 
 		except Exception as e:
 			self.log.critical("Não foi possível carregar/validar a chave de ativação.")
@@ -233,4 +233,4 @@ class WorkSpace:
 		return False
 
 global ws
-ws = WorkSpace(loadconfig=False)
+ws = WorkSpace()

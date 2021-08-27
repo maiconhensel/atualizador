@@ -6,19 +6,17 @@ if __name__ == '__main__':
 	
 	from core.workspace import ws
 
-	print('Args: %s' % sys.argv)
+	ws.log.info('Args: %s' % sys.argv)
 
 	cur_dir = os.getcwd().split(os.sep)
-	print('CurDir: %s ' % cur_dir)
+	ws.log.debug('CurDir: %s ' % cur_dir)
 
 	cur_dir = os.sep.join([x for x in cur_dir if x != 'atualizador'])
-	print('CurDir: %s ' % cur_dir)
+	ws.log.info('CurDir: %s ' % cur_dir)
 
-	if os.environ.get('DEVEL'):
+	if ws.info['env'].get('devel'):
 		cur_dir = os.sep.join([cur_dir, 'teste_atualizador'])
-		print('CurDir Devel: %s ' % cur_dir)
-
-	ws.load(cur_dir)
+		ws.log.info('CurDir Devel: %s ' % cur_dir)
 
 	if ws.key:
 		hidden = False

@@ -234,7 +234,7 @@ class CadastroApp:
 		if not os.path.exists(install_dir):
 			try:
 				self.ws.log.info('Criando o diretório %s' % install_dir)
-				os.mkdir(dir_name)
+				os.mkdir(install_dir)
 			except:
 				self.ws.log.error(traceback.format_exc())
 				raise Exception('Falha ao criar o diretório %s' % install_dir)
