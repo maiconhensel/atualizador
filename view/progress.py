@@ -12,13 +12,15 @@ from tkinter.ttk import Progressbar
 from controller import Atualizador
 
 class ProgressApp:
-	def __init__(self, ws, main_dir, hidden=False, master=None, is_install=False):
+	def __init__(self, ws, main_dir, hidden=False, master=None, is_install=False, install_db=False, create_shortcut=False):
 		self.ws = ws
 		self.main_dir = main_dir
 		self.master = master
 
 		self.visible = not hidden
 		self.is_install = is_install
+		self.install_db = install_db
+		self.create_shortcut = create_shortcut
 
 		self.configure()
 
@@ -155,14 +157,13 @@ class ProgressApp:
 		self.set_produto_txt(self.ws.key['appname'])
 		self.set_versao_txt('')
 
-		A = Atualizador(self.ws, self)
+		ATL = Atualizador(self.ws, self)
 		msg = ''
 
 		if '--download' in args:
 			self.ws.log.info('Parâmetro --download')
 			try:
-				if not A.download():
-					self.exit()
+				ATL.download()
 				msg = 'Download concluído!'
 			except Exception as e:
 				self.ws.log.error(traceback.format_exc())
@@ -172,8 +173,7 @@ class ProgressApp:
 		if '--update' in args:
 			self.ws.log.info('Parâmetro --update')
 			try:
-				if not A.update():
-					self.exit()
+				ATL.update()
 				msg = 'Instalação concluída!' if self.is_install else 'Atualização concluída!'
 			except Exception as e:
 				self.ws.log.error(traceback.format_exc())

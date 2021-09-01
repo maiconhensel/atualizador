@@ -14,16 +14,15 @@ from datetime import datetime
 
 
 class Downloader:
-	def __init__(self, ws, parent=None, resolve_path=True):
+	def __init__(self, ws, parent=None):
 		self.ws = ws
 		self.parent = parent
-		self.main_dir = parent.main_dir
+		self.main_dir = parent and parent.main_dir
+		self.install_db = parent and parent.install_db
 		self.md5s = {}
+		self.pgsql_md5s = {}
 
 		self.__load_info_server()
-
-		if resolve_path:
-			self.__resolve_version_path()
 
 	def __load_info_server(self):
 		self.base_url = None
@@ -75,7 +74,7 @@ class Downloader:
 
 	'''
 
-	def download_version(self):
+	def download(self):
 		"""
 		Faz o download da versão através do servidor HTTP.
 		Parâmetro:
@@ -88,7 +87,18 @@ class Downloader:
 		self.ws.log.info("Baixando arquivos do servidor no diretório %s" % self.main_dir)
 		self.ws.log.info("---------------------------------")
 
-		self.__walk_http()
+		if self.install_db:
+			self.ws.log.info("Baixando arquivos do banco de dados.")
+			self.base_url = "%s%s" % (self.base_url, 'extra/postgres/')
+
+			self.__download_file('pgsql.zip', target_path=os.path.join(self.main_dir, 'update'))
+			self.ws.log.info("---------------------------------")
+			self.__load_info_server()
+
+		self.__resolve_version_path()
+
+		self.ws.log.info("Baixando arquivos do sistema.")
+		self.__walk_http(self.md5s)
 
 		self.ws.log.info("---------------------------------")
 		self.ws.log.info("Todos os arquivos foram baixados.")
@@ -117,6 +127,9 @@ class Downloader:
 		self.__make_dir(local_filename, target_path)
 
 		req = self.__get_request(self.base_url + source_path.replace('\\', '/'))
+
+		self.ws.log.info('Baixando {}'.format(source_path))
+		self.parent.set_status_txt('Baixando {}'.format(source_path.split('\\')[-1]))
 
 		with open(local_filename, 'wb') as f:
 			shutil.copyfileobj(req.raw, f)
@@ -176,6 +189,7 @@ class Downloader:
 			dirname += "/" + self.ws.key['empresa_uf']
 
 		version_path = self.__get_version_path(dirname)
+
 		self.base_url += version_path + "/"
 		self.ws.log.debug("Buscando MD5 em %s" % self.base_url)
 		self.md5s = self.__get_md5_sum()
@@ -253,16 +267,16 @@ class Downloader:
 			text = f.read()
 			return json.loads(text)
 
-	def __walk_http(self):
+	def __walk_http(self, md5s):
 		"""
 		Percorre a lista de arquivos versus MD-5 do servidor baixando os arquivos do sistema que não existem
 		ou estão desatualizados.
 		"""
 		main_folder_path = self.main_dir
 		update_folder_path = os.path.join(main_folder_path, 'update')
-		md5_length = len(self.md5s)
+		md5_length = len(md5s)
 
-		for index, iter in enumerate(self.md5s.items()):
+		for index, iter in enumerate(md5s.items()):
 			fname = iter[0].replace('.\\', '')
 			fmd5 = iter[1]
 			full_dir = os.path.join(update_folder_path, fname)
@@ -290,10 +304,6 @@ class Downloader:
 
 					self.ws.log.info("Arquivo {} OK".format(fname))
 					continue
-
-			self.parent.set_status_txt('Baixando {}'.format(fname.split('\\')[-1]))
-
-			self.ws.log.info('Baixando {}'.format(fname))
 
 			self.__download_file(fname, update_folder_path)
 

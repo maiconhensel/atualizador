@@ -177,7 +177,7 @@ class WorkSpace:
 		db_dict = {
 			'host': 'localhost',
 			'port': 5470,
-			'database': 'linxpostosposs',
+			'database': 'linxpostospos',
 			'schema': schema,
 			'user': 'postgres',
 			'password': 'postgres'			

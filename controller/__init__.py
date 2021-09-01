@@ -12,6 +12,9 @@ class Atualizador:
 		self.parent = parent
 		self.show_message_error = parent.show_message_error
 		self.main_dir = parent.main_dir
+		self.is_install = parent.is_install
+		self.install_db = parent.install_db
+		self.create_shortcut = parent.create_shortcut
 
 		self.set_status_txt = self.parent.set_status_txt
 		self.set_statusbar_percent = self.parent.set_statusbar_percent
@@ -33,8 +36,8 @@ class Atualizador:
 		dir_name = os.sep.join([self.main_dir, 'update'])
 		self.__create_dir(dir_name)
 
-		D = Downloader(self.ws, self)
-		D.download_version()
+		Downloader(self.ws, self).download()
+		
 		return True
 		
 	def update(self):
@@ -42,6 +45,5 @@ class Atualizador:
 		if not os.path.exists(os.sep.join([self.main_dir, 'update'])):
 			raise Exception('Diretório update não existe')
 
-		U = Updater(self.ws, self)
-		U.update()
+		Updater(self.ws, self).update()
 		return True

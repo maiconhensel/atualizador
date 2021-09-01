@@ -1,18 +1,21 @@
 #import requests
-import shutil
 import os
+import pythoncom
 import shlex
+import shutil
 import subprocess
 import sys
 import time
 import traceback
 import zipfile
+import win32com.client
 
 class Updater:
 	def __init__(self, ws, parent=None):
 		self.ws = ws
 		self.parent = parent
-		self.main_dir = parent.main_dir
+		self.main_dir = parent and parent.main_dir
+		self.install_db = parent and parent.install_db
 		self.buckup_file_name = None
 
 	def show_message(self, msg):
@@ -41,7 +44,17 @@ class Updater:
 		self.parent.set_statusbar_percent(100)
 		self.show_message("Arquivos movidos com sucesso!")
 
-		self.__execute_manut()
+		self.ws.log.info('flag install_db %r' % self.install_db)
+		if self.install_db:
+			self.__instal_postgres()
+
+		else:
+			self.__execute_manut()
+
+		self.ws.log.info('flag is_install %r' % self.parent.is_install)
+		self.ws.log.info('flag create_shortcut %r' % self.parent.create_shortcut)
+		if self.parent.is_install and self.parent.create_shortcut:
+			self.__create_shortcuts()
 
 		self.show_message("Finalizado!")
 		return True
@@ -57,8 +70,6 @@ class Updater:
 			sys_security_exe = os.sep.join([self.main_dir, 'system_security.exe'])
 			if os.path.exists(sys_security_exe):
 				self.show_message('Executando scripts de segurança da aplicação.')
-				startupinfo = subprocess.STARTUPINFO()
-				startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 				#os.startfile(sys_security_exe)
 				#subprocess.call(shlex.split("\"%s\"" % sys_security_exe), startupinfo=startupinfo)
 				#subprocess.call(shlex.split("\"%s\"" % sys_security_exe), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=startupinfo)
@@ -66,12 +77,8 @@ class Updater:
 				#subprocess.call([sys_security_exe], stdout=sys.stdout, stderr=sys.stdout, startupinfo=startupinfo)	
 
 				# com atualização da tela
-				count = 0.0
-				proc = subprocess.Popen([sys_security_exe],stdout=subprocess.PIPE)
-				for line in iter(proc.stdout.readline,''):
-					self.show_message(line.rstrip().decode())
-					self.parent.set_statusbar_percent(count)
-					count = count + 0.2 if count < 100 else 0
+				self.__execute_exe([sys_security_exe])
+
 			else:
 				self.ws.log.critical("system_security.exe não existe na diretório de instalação/atualização: %s" % self.main_dir)
 				return False
@@ -274,22 +281,26 @@ class Updater:
 			self.kill_process_runing()
 
 			self.ws.log.info('Houve um problema na aplicação da atualização. Restaurando o arquivo %s de backup do sistema.' % self.buckup_file_name)
-			arquivo_zip = zipfile.ZipFile(self.buckup_file_name, "r")
-
-			file_list_length = len(arquivo_zip.infolist())
-
-			self.parent.set_statusbar_percent(0)
-
-			for index, arquivo in enumerate(arquivo_zip.infolist()):
-				dir_list = arquivo.filename.split('/')
-				self.parent.set_statusbar_percent(100 * (index+1) / file_list_length)
-				self.show_message('Restaurando arquivo: ' + dir_list[-1])
-				arquivo_zip.extract(arquivo)
+			self.__unzip_file(self.buckup_file_name)
 
 			return True
 		except Exception as e:
 			self.ws.log.critical(traceback.format_exc())
 			return False
+
+	def __unzip_file(self, zip_file_name):
+
+		arquivo_zip = zipfile.ZipFile(zip_file_name, "r")
+
+		file_list_length = len(arquivo_zip.infolist())
+
+		self.parent.set_statusbar_percent(0)
+
+		for index, arquivo in enumerate(arquivo_zip.infolist()):
+			dir_list = arquivo.filename.split('/')
+			self.parent.set_statusbar_percent(100 * (index+1) / file_list_length)
+			self.show_message('Descompactando arquivo: ' + dir_list[-1])
+			arquivo_zip.extract(arquivo)
 
 	def kill_process_runing(self):
 		"""
@@ -324,12 +335,95 @@ class Updater:
 		os.chdir(self.main_dir)
 
 		try:
-			startupinfo = subprocess.STARTUPINFO()
-			startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+			self.__execute_exe([manut_exe, ' --checkdb'])
+
+			#startupinfo = subprocess.STARTUPINFO()
+			#startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 			#subprocess.call(shlex.split("\"%s\" --checkdb" % manut_exe), startupinfo=startupinfo)
-			subprocess.call(shlex.split("\"%s\" --checkdb" % manut_exe), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=startupinfo)
+			#subprocess.call(shlex.split("\"%s\" --checkdb" % manut_exe), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=startupinfo)
 			#subprocess.call([manut_exe, '--checkdb'], stdout=sys.stdout, stderr=sys.stdout, startupinfo=startupinfo)
+
 		except:
 			self.ws.log.critical(traceback.format_exc())
 		finally:
 			os.chdir(base_dir)
+
+	def __instal_postgres(self):
+		"""
+			Objetivo: Realizar a manutenção de banco de dados, através do executável do produto LinxPostosPos
+			Parametro: Nenhum
+			Retorno: Nenhum
+		"""
+		base_dir = os.getcwd()
+		os.chdir(self.main_dir)
+
+		self.show_message("Realizando instalação do banco de dados.")
+		try:
+			psql_file_zip = os.sep.join([self.main_dir, 'pgsql.zip'])
+			self.ws.log.info("Arquvio pgsql.zip: %s" % psql_file_zip)
+			self.__unzip_file(psql_file_zip)
+			
+		except Exception as e:
+			self.ws.log.error(traceback.format_exc())
+
+		pgsql_install_exe = os.sep.join([self.main_dir, 'pgsql_install.exe'])
+		self.ws.log.info([pgsql_install_exe])
+
+		try:
+			self.__execute_exe(pgsql_install_exe)
+			os.remove(psql_file_zip)
+		except Exception as e:
+			self.ws.log.critical(traceback.format_exc())
+			raise Exception("Ocorreu um erro ao realizar a instalação do banco de dados\nErro: %s" % str(e))
+		finally:
+			os.chdir(base_dir)
+
+	def __execute_exe(self, exe):
+
+		startupinfo = subprocess.STARTUPINFO()
+		startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
+		count = 0.0
+		proc = subprocess.Popen(exe, stdout=subprocess.PIPE, stdin=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+		for line in iter(proc.stdout.readline,''):
+			if not line:
+				break
+			try:
+				self.show_message(line.rstrip().decode())
+			except:
+				pass
+			self.parent.set_statusbar_percent(count)
+			count = count + 0.2 if count < 100 else 0
+
+		self.parent.set_statusbar_percent(100)
+
+	def __create_shortcuts(self):
+
+		def __create(exe):
+			self.ws.log.info('Criando atalho do %s' % exe)
+
+			try:
+				pythoncom.CoInitialize() # remove the '#' at the beginning of the line if running in a thread.
+				desktop = os.path.join(os.environ['USERPROFILE'], 'Desktop') # path to where you want to put the .lnk
+				self.ws.log.info("Diretório desktop: %s" % desktop)
+				
+				path = os.path.join(desktop, exe.replace('exe', 'lnk'))
+
+				target = os.path.join(self.main_dir, exe)
+				self.ws.log.info("Diretório do exe: %s" % target)
+
+				shell = win32com.client.Dispatch("WScript.Shell")
+				shortcut = shell.CreateShortCut(path)
+				shortcut.Targetpath = target
+				shortcut.IconLocation = target
+				shortcut.WorkingDirectory = self.main_dir
+				shortcut.WindowStyle = 7 # 7 - Minimized, 3 - Maximized, 1 - Normal
+				self.ws.log.info("Criando atalho %s" % path)
+				shortcut.save()
+			except Exception as e:
+				self.ws.log.critical("Falha ao criar o atalho do exe: %s" % exe)
+				self.ws.log.error(traceback.format_exc())
+
+		__create('pdv.exe')
+		__create('sync.exe')
+		__create('atualizador.exe')

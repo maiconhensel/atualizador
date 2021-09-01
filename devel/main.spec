@@ -25,9 +25,12 @@ pyz = PYZ(
 	cipher=block_cipher
 )
 a.datas += [
+    ('resources\\logo.ico','.\\resources\\logo.ico', 'Data'),
     ('resources\\logo_linx.png','.\\resources\\logo_linx.png', 'Data'),
     ('resources\\logo-linx.png','.\\resources\\logo-linx.png', 'Data'),
-    ('resources\\logo.ico','.\\resources\\logo.ico', 'Data'),
+    ('resources\\bt-icone-check.png','.\\resources\\bt-icone-check.png', 'Data'),
+    ('resources\\bt-icone-close.png','.\\resources\\bt-icone-close.png', 'Data'),
+    ('resources\\bt-icone-input-busca.png','.\\resources\\bt-icone-input-busca.png', 'Data'),
 ]
 
 exe = EXE(pyz,

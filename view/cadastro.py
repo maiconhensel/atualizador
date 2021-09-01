@@ -6,17 +6,16 @@ import shutil
 import time
 import traceback
 import threading
-import tkinter as tk
-import tkinter.ttk as ttk
+from tkinter import Tk, Toplevel, LabelFrame, Label, Entry, Button, StringVar, messagebox
 from tkinter.ttk import Separator
+
 #import pygubu
 from PIL import Image, ImageTk
-from tkinter import Tk, Toplevel, LabelFrame, Label, Entry, Button, StringVar, messagebox
 from utils import valida_cnpj
 from core.key import PRODUTO_INTRANET_MAP
 
-PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
-PROJECT_UI = os.path.join(PROJECT_PATH, "cadastro.ui")
+from view.progress import ProgressApp
+from view.install_options import InstallOptions
 
 class CadastroApp:
 	def __init__(self, ws, cur_dir, master=None):
@@ -48,10 +47,12 @@ class CadastroApp:
 		self.ed_cnpj = Entry(self.labelframe3)
 		self.ed_cnpj.grid(column='1', row='0')
 		self.ed_cnpj.bind('<Key-Tab>', self.on_change_cnpj)
+		self.ed_cnpj.bind("<Return>", lambda event: self.bt_consultar_clicked())
 
 		self.ed_senha = Entry(self.labelframe3)
 		self.ed_senha.configure(show='•')
 		self.ed_senha.grid(column='1', row='1')
+		self.ed_senha.bind("<Return>", lambda event: self.bt_consultar_clicked())
 
 		self.separator1 = Separator(self.labelframe3)
 		self.separator1.configure(orient='vertical')
@@ -63,6 +64,8 @@ class CadastroApp:
 		self.bt_consultar.grid_propagate(0)
 		self.bt_consultar.rowconfigure('2', pad='0')
 		self.bt_consultar.bind('<1>', self.bt_consultar_clicked, add='')
+		self.bt_consultar.bind("<Return>", lambda event: self.bt_consultar_clicked())
+
 
 		self.label4 = Label(self.labelframe3)
 		self.label4.configure(anchor='w', background='#5B2E90', foreground='#ffffff', justify='left')
@@ -137,6 +140,9 @@ class CadastroApp:
 
 	def run(self):
 		self.mainwindow.mainloop()
+
+	def exit(self):
+		self.mainwindow.destroy()
 
 	def show_message_error(self, message):
 		messagebox.showerror(parent=self.mainwindow, title='Ocorreu um erro', message=message, icon='error')
@@ -227,8 +233,22 @@ class CadastroApp:
 			self.show_message_error(str(e))
 			return
 
-		install_dir = os.sep.join(['C:', prod_dict['install_dir']])
+		IO = InstallOptions(self.ws, self.mainwindow, 'Opções de instalação', {
+			'install_dir': os.sep.join(['C:', prod_dict['install_dir']]),
+			'install_db': not self.ws.dbs.get('public'),
+			'create_shortcuts': True,
+		})
+
+		if not IO.ret_dict:
+			return
+
+		install_dir = IO.ret_dict['install_dir']
+		install_db = IO.ret_dict['install_db']
+		create_shortcut = IO.ret_dict['create_shortcuts']
+
 		if self.ws.info['env'].get('devel'):
+			self.ws.log.info("Usando variável de ambiente LXDEVEL")
+			self.ws.log.info("Trocando para o diretório %s" % self.main_dir)
 			install_dir = self.main_dir
 
 		if not os.path.exists(install_dir):
@@ -237,20 +257,28 @@ class CadastroApp:
 				os.mkdir(install_dir)
 			except:
 				self.ws.log.error(traceback.format_exc())
-				raise Exception('Falha ao criar o diretório %s' % install_dir)
+				self.show_message_error('Falha ao criar o diretório %s' % install_dir)
+				return
 
 		main_dir = self.main_dir
 		if self.ws.info['env'].get('devel'):
 			main_dir = os.sep.join([x for x in self.main_dir.split(os.sep) if x != 'teste_atualizador'])
 
 		self.ws.log.info('Movendo chave de ativação para o diretório %s' % install_dir)
-		shutil.move(os.path.join(main_dir, 'linxpostospos.key'), os.sep.join([install_dir, "linxpostospos.key"]))
+		shutil.move(os.path.join(main_dir, 'linxpostospos.key'), os.sep.join([install_dir, "_linxpostospos.key"]))
 
-		from view.progress import ProgressApp
-		P = ProgressApp(self.ws, install_dir, master=self.mainwindow, is_install=True)
+		P = ProgressApp(self.ws, install_dir, master=self.mainwindow, is_install=True, install_db=install_db, create_shortcut=create_shortcut)
+
+		self.hide()
 		P.run(*['--download', '--update'])
-		self.mainwindow.wait_window(P.mainwindow)
 
+		self.mainwindow.wait_window(P.mainwindow)
+		shutil.move(os.sep.join([install_dir, "_linxpostospos.key"]), os.sep.join([install_dir, "linxpostospos.key"]))
+		self.exit()
+
+	def hide(self):
+		self.mainwindow.withdraw()
+	
 	def on_change_cnpj(self, event):
 		self.validate_cnpj(self.ed_cnpj.get())
 
