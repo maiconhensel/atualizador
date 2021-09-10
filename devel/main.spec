@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['..\\main.py'],
-	pathex=['C:\\sistemas\\atualizador'],
+	pathex=['C:\\sistemas\\updater'],
 	binaries=[],
 	datas=[],
 	hiddenimports=[],
@@ -51,5 +51,6 @@ exe = EXE(pyz,
 	target_arch=None,
 	codesign_identity=None,
 	entitlements_file=None,
+	uac_admin=True, 
 	icon='..\\resources\\logo.ico'
 )
