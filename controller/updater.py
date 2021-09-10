@@ -10,6 +10,8 @@ import traceback
 import zipfile
 import win32com.client
 
+from core.key import APP_EXE_NAME_MAP
+
 class Updater:
 	def __init__(self, ws, parent=None):
 		self.ws = ws
@@ -37,25 +39,24 @@ class Updater:
 
 		self.__compactar_arquivos_backup()
 
-		lista_arquivos_descartados = ["log", "backup", "update", "paf_ecf"]
+		self.__move_files()
 
-		self.__move_files(lista_arquivos_descartados)
-
-		self.parent.set_statusbar_percent(100)
-		self.show_message("Arquivos movidos com sucesso!")
-
-		self.ws.log.info('flag install_db %r' % self.install_db)
+		self.ws.log.debug('flag install_db %r' % self.install_db)
 		if self.install_db:
+			self.parent.set_statusbar_percent(0)
 			self.__instal_postgres()
 
 		else:
+			self.parent.set_statusbar_percent(0)
 			self.__execute_manut()
 
-		self.ws.log.info('flag is_install %r' % self.parent.is_install)
-		self.ws.log.info('flag create_shortcut %r' % self.parent.create_shortcut)
+		self.ws.log.debug('flag is_install %r' % self.parent.is_install)
+		self.ws.log.debug('flag create_shortcut %r' % self.parent.create_shortcut)
+
 		if self.parent.is_install and self.parent.create_shortcut:
 			self.__create_shortcuts()
 
+		self.parent.set_statusbar_percent(100)
 		self.show_message("Finalizado!")
 		return True
 
@@ -97,8 +98,10 @@ class Updater:
 			Retorno: True em caso de sucesso, False em caso de não existir a pasta update, Exception em caso de falha.
 		"""
 
-		if not os.path.exists(os.path.join(self.main_dir, 'update')):
+		if not os.path.exists(os.path.join(self.main_dir, 'update')) or not os.listdir(self.main_dir):
 			return False
+
+		self.parent.set_statusbar_percent(0)
 
 		backup_dir = os.path.join(self.main_dir, 'backup')
 
@@ -212,14 +215,14 @@ class Updater:
 
 		return return_list
 
-	def __move_files(self, lista_arquivos_descartados=None):
+	def __move_files(self):
 		"""
 			Objetivo: Mover os arquivos da pasta update para a pasta raiz.
 			Parâmetro: lista_arquivos_descartados - lista contendo arquivos/diretórios que não devem ser movidos.
 			Retorno: True em caso de sucesso, Exception em caso de falha.
 		"""
 
-		lista_arquivos_descartados = lista_arquivos_descartados or []
+		lista_arquivos_descartados = ["log", "backup", "update", "paf_ecf"]
 
 		self.parent.set_statusbar_percent(0)
 
@@ -251,10 +254,6 @@ class Updater:
 				self.show_message("Movendo o arquivo: {}".format(file_name))
 				shutil.move(real_file_name, os.sep.join([dest_dir_name, file_name]))
 
-			#if self.ws.has_mide() and os.path.exists(os.path.join(self.main_dir, ws.services['mide.atualizador'].setup_file_name)):
-			#	ws.log.info("Executando instalador do MID-e Client")
-			#	os.popen("%s /s /F /CNPJ=%s" % (ws.services['mide.atualizador'].setup_file_name, ''.join([x for x in ws.info['empresa']['cnpj'] if x.isdigit()])))
-
 			arquivos_backup = [x for x in os.listdir(os.path.join(self.main_dir, 'backup')) if os.path.isfile(os.path.join(os.path.join(self.main_dir, 'backup'), x))]
 			for arquivo in arquivos_backup:
 				if arquivo.startswith('old_'):
@@ -267,7 +266,12 @@ class Updater:
 			raise Exception("Backup restaurado com sucesso.")
 
 		# Desmarca a flag de versão baixada
-		#ws.services['config'].save_config({'atualizacao_versao_baixada': False})
+		if self.ws.dbs.get('public'):
+			self.ws.dbs['public'].execute("update config_local set valor = false where chave = 'atualizacao_versao_baixada'")
+
+		self.parent.set_statusbar_percent(100)
+		self.show_message("Arquivos movidos com sucesso!")
+
 		return True
 
 	def __rollback_backup(self):
@@ -335,7 +339,7 @@ class Updater:
 		os.chdir(self.main_dir)
 
 		try:
-			self.__execute_exe([manut_exe, ' --checkdb'])
+			self.__execute_exe(shlex.split("\"%s\" --checkdb" % manut_exe))
 
 			#startupinfo = subprocess.STARTUPINFO()
 			#startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -389,7 +393,9 @@ class Updater:
 			if not line:
 				break
 			try:
-				self.show_message(line.rstrip().decode())
+				text = line.rstrip().decode()
+				if text:
+					self.show_message(text)
 			except:
 				pass
 			self.parent.set_statusbar_percent(count)
@@ -399,12 +405,14 @@ class Updater:
 
 	def __create_shortcuts(self):
 
+		self.parent.set_statusbar_percent(0)
+
 		def __create(exe):
 			self.ws.log.info('Criando atalho do %s' % exe)
 
 			try:
-				pythoncom.CoInitialize() # remove the '#' at the beginning of the line if running in a thread.
-				desktop = os.path.join(os.environ['USERPROFILE'], 'Desktop') # path to where you want to put the .lnk
+				pythoncom.CoInitialize()
+				desktop = os.path.join(os.environ['USERPROFILE'], 'Desktop')
 				self.ws.log.info("Diretório desktop: %s" % desktop)
 				
 				path = os.path.join(desktop, exe.replace('exe', 'lnk'))
@@ -413,17 +421,26 @@ class Updater:
 				self.ws.log.info("Diretório do exe: %s" % target)
 
 				shell = win32com.client.Dispatch("WScript.Shell")
+
 				shortcut = shell.CreateShortCut(path)
 				shortcut.Targetpath = target
 				shortcut.IconLocation = target
 				shortcut.WorkingDirectory = self.main_dir
 				shortcut.WindowStyle = 7 # 7 - Minimized, 3 - Maximized, 1 - Normal
+
 				self.ws.log.info("Criando atalho %s" % path)
 				shortcut.save()
 			except Exception as e:
 				self.ws.log.critical("Falha ao criar o atalho do exe: %s" % exe)
 				self.ws.log.error(traceback.format_exc())
 
-		__create('pdv.exe')
+		principal_exe_name = APP_EXE_NAME_MAP.get(self.ws.key.get('appid')) or 'pdv.exe'
+
+		__create(principal_exe_name)
+		self.parent.set_statusbar_percent(33)
+
 		__create('sync.exe')
+		self.parent.set_statusbar_percent(66)
+
 		__create('atualizador.exe')
+		self.parent.set_statusbar_percent(100)

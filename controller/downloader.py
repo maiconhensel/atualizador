@@ -39,41 +39,6 @@ class Downloader:
 
 		self.auth = HTTPBasicAuth(self.username, self.password)
 
-	'''
-	def verifica_atualizacao_mide(self, versao, versao_pdv):
-		"""
-			Verifica a necessidade de atualização do mideclient.exe
-		"""
-		try:
-			self.base_url = "%s%s" % (self.base_url, 'extra/mide/V%s/' % versao_pdv)
-
-			self.__download_file("versao.txt", target_path=os.path.join(self.main_dir))
-
-			if os.path.exists(os.path.join(self.main_dir, 'update')):
-				versao_mide_versao = TString.parse(open(self.main_dir + '\\versao.txt', 'r').readline().strip())
-				versao_mide_versao = [TInteger.parse(x) for x in (versao_mide_versao or '0').split('.')]
-			
-			from util.lxutil import compara_versao
-
-			self.ws.log.info('Versão Atual: %s' % '.'.join([str(x) for x in versao]))
-			self.ws.log.info('Versão FTP: %s' % '.'.join([str(x) for x in versao_mide_versao]))
-
-			return compara_versao(versao, versao_mide_versao)
-
-		except Exception as e:			
-			self.ws.log.critical("Erro ao buscar a versão do mide para a versão: %s" % str(e))
-			self.ws.log.critical(traceback.format_exc())
-			# Pula atualização
-			return True
-
-	def download_mide(self):
-		"""
-			Download mideclient.exe
-		"""
-		return self.__download_file("MideClient.exe", target_path=os.path.join(self.main_dir))
-
-	'''
-
 	def download(self):
 		"""
 		Faz o download da versão através do servidor HTTP.
@@ -103,18 +68,11 @@ class Downloader:
 		self.ws.log.info("---------------------------------")
 		self.ws.log.info("Todos os arquivos foram baixados.")
 
-		#self.ws.services['config'].save_config({'atualizacao_versao_baixada': True})
-
-		self.ws.log.info("Verificando necessidade de download do MID-e")
-		if self.ws.has_mide():
-			self.__download_mide()
+		if self.ws.dbs.get('public'):
+			self.ws.dbs['public'].execute("update config_local set valor = true where chave = 'atualizacao_versao_baixada'")
 
 		self.ws.log.info('Download dos arquivos da nova versão foram concluídos.')
 		return True
-
-	def __download_mide(self):
-		return
-		ws.services['mide.atualizador'].update(print, is_electron)
 
 	def __download_file(self, source_path, target_path=None):
 		"""

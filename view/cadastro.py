@@ -216,6 +216,7 @@ class CadastroApp:
 				if prod_dict['id'] in intranet_produto_map.keys():
 					prod_dict['app_id'] = intranet_produto_map[prod_dict['id']]
 					prod_dict['install_dir'] = prod_dict['nome'].replace(' ', '')
+
 					self.make_bt_produto(str(prod_dict['app_id']), prod_dict, int(ix/5), ix%5)
 					ix = ix+1 if ix < 5 else 0
 

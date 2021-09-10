@@ -9,6 +9,8 @@ from PIL.ImageTk import PhotoImage
 from tkinter import Tk, Frame, Label, IntVar, StringVar, messagebox, Toplevel
 from tkinter.ttk import Progressbar
 
+from core.key import APP_EXE_NAME_MAP
+
 from controller import Atualizador
 
 class ProgressApp:
@@ -182,6 +184,15 @@ class ProgressApp:
 
 		if msg and self.visible:
 			self.show_message_info(msg)
+			try:
+				exe_name = APP_EXE_NAME_MAP.get(self.ws.key.get('appid')) or 'pdv.exe'
+				self.ws.log.info("Execudanto o exe: %s" % os.path.join(self.main_dir, exe_name))
+
+				os.chdir(self.main_dir)
+				os.startfile(os.path.join(self.main_dir, exe_name))
+			except Exception as e:
+				self.ws.log.error('Falha ao executar a aplicação!')
+				self.ws.log.error(traceback.format_exc())
 
 		self.exit()
 

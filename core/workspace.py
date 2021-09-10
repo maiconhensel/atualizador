@@ -210,7 +210,7 @@ class WorkSpace:
 
 			return True
 
-		self.is_paf = self.key.get('paf') and self.key['paf'].get('ativo') and check_module_config(self) or False
+		self.is_paf = self.key.get('paf') and self.key['paf'].get('ativo') and check_module_config() or False
 
 		if self.key.get('empresa_cnpj') =='54.517.628/0014-02' and os.environ.get('LXNOTPAF'):
 			self.is_paf = False

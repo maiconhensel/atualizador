@@ -62,6 +62,15 @@ PRODUTO_INTRANET_MAP = {
 	TERMINAL_COMANDA_APP: 37,
 }
 
+APP_EXE_NAME_MAP = {
+	LXPOS_APP: 'pdv.exe',
+	PDVSELLER_APP: 'pdv.exe',
+	JETOIL_APP: 'jetoil.exe',
+	KDS_APP: 'kds.exe',
+	AUTOATENDIMENTO_APP: 'autoatendimento.exe',
+	TERMINAL_COMANDA_APP: 'terminal_comanda.exe',
+}
+
 # Bandeiras
 BANDEIRA_BRANCA = 1
 BANDEIRA_IPIRANGA = 2
