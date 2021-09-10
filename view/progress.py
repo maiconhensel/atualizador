@@ -186,7 +186,7 @@ class ProgressApp:
 			self.show_message_info(msg)
 			try:
 				exe_name = APP_EXE_NAME_MAP.get(self.ws.key.get('appid')) or 'pdv.exe'
-				self.ws.log.info("Execudanto o exe: %s" % os.path.join(self.main_dir, exe_name))
+				self.ws.log.info("Executando o exe: %s" % os.path.join(self.main_dir, exe_name))
 
 				os.chdir(self.main_dir)
 				os.startfile(os.path.join(self.main_dir, exe_name))
