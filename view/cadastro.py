@@ -183,6 +183,7 @@ class CadastroApp:
 			self.bt_produto_map.pop(k)[0].destroy()
 
 		try:
+			cnpj = ''.join([x for x in cnpj if x.isdigit()])
 			resposta_dict = self.get_cliente(cnpj)
 			self.cliente_dict = resposta_dict['clientes'][0]
 		except Exception as e:
