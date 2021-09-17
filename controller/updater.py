@@ -71,13 +71,6 @@ class Updater:
 			sys_security_exe = os.sep.join([self.main_dir, 'system_security.exe'])
 			if os.path.exists(sys_security_exe):
 				self.show_message('Executando scripts de segurança da aplicação.')
-				#os.startfile(sys_security_exe)
-				#subprocess.call(shlex.split("\"%s\"" % sys_security_exe), startupinfo=startupinfo)
-				#subprocess.call(shlex.split("\"%s\"" % sys_security_exe), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=startupinfo)
-
-				#subprocess.call([sys_security_exe], stdout=sys.stdout, stderr=sys.stdout, startupinfo=startupinfo)	
-
-				# com atualização da tela
 				self.__execute_exe([sys_security_exe])
 
 			else:
@@ -265,9 +258,12 @@ class Updater:
 			self.__rollback_backup()
 			raise Exception("Backup restaurado com sucesso.")
 
-		# Desmarca a flag de versão baixada
 		if self.ws.dbs.get('public'):
-			self.ws.dbs['public'].execute("update config_local set valor = false where chave = 'atualizacao_versao_baixada'")
+			try:
+				self.ws.dbs['public'].execute("update config_local set valor = false where chave = 'atualizacao_versao_baixada'")
+			except Exception as e:
+				self.ws.log.error("Ocorreu um erro ao atualizar a chave 'atualizacao_versao_baixada' da tabela config_local")
+				self.ws.log.error(traceback.format_exc())
 
 		self.parent.set_statusbar_percent(100)
 		self.show_message("Arquivos movidos com sucesso!")
@@ -340,13 +336,6 @@ class Updater:
 
 		try:
 			self.__execute_exe(shlex.split("\"%s\" --checkdb" % manut_exe))
-
-			#startupinfo = subprocess.STARTUPINFO()
-			#startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-			#subprocess.call(shlex.split("\"%s\" --checkdb" % manut_exe), startupinfo=startupinfo)
-			#subprocess.call(shlex.split("\"%s\" --checkdb" % manut_exe), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=startupinfo)
-			#subprocess.call([manut_exe, '--checkdb'], stdout=sys.stdout, stderr=sys.stdout, startupinfo=startupinfo)
-
 		except:
 			self.ws.log.critical(traceback.format_exc())
 		finally:
@@ -361,7 +350,6 @@ class Updater:
 		base_dir = os.getcwd()
 		os.chdir(self.main_dir)
 
-		self.show_message("Realizando instalação do banco de dados.")
 		try:
 			psql_file_zip = os.sep.join([self.main_dir, 'pgsql.zip'])
 			self.ws.log.info("Arquvio pgsql.zip: %s" % psql_file_zip)
@@ -370,6 +358,7 @@ class Updater:
 		except Exception as e:
 			self.ws.log.error(traceback.format_exc())
 
+		self.show_message("Realizando instalação do banco de dados.")
 		pgsql_install_exe = os.sep.join([self.main_dir, 'pgsql_install.exe'])
 		self.ws.log.info([pgsql_install_exe])
 
@@ -383,6 +372,11 @@ class Updater:
 			os.chdir(base_dir)
 
 	def __execute_exe(self, exe):
+		"""
+			Objetivo: Executar alguns executáveis necessários na instalação/atualização do sistema
+			Parametro: exe - nome do arquivo executável
+			Retorno: Nenhum
+		"""
 
 		startupinfo = subprocess.STARTUPINFO()
 		startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -404,24 +398,28 @@ class Updater:
 		self.parent.set_statusbar_percent(100)
 
 	def __create_shortcuts(self):
+		"""
+			Objetivo: Criar os atalhosdos executáveis do sistema instalado
+			Parametro: Nenhum
+			Retorno: Nenhum
+		"""
 
 		self.parent.set_statusbar_percent(0)
 
-		def __create(exe):
+		def __create(exe, lnk_name=''):
 			self.ws.log.info('Criando atalho do %s' % exe)
 
 			try:
+				target = os.path.join(self.main_dir, exe)
+				self.ws.log.info("Diretório do exe: %s" % target)
+				
 				pythoncom.CoInitialize()
 				desktop = os.path.join(os.environ['USERPROFILE'], 'Desktop')
 				self.ws.log.info("Diretório desktop: %s" % desktop)
 				
-				path = os.path.join(desktop, exe.replace('exe', 'lnk'))
-
-				target = os.path.join(self.main_dir, exe)
-				self.ws.log.info("Diretório do exe: %s" % target)
+				path = os.path.join(desktop, self.ws.key.get('appname') + lnk_name + '.lnk')
 
 				shell = win32com.client.Dispatch("WScript.Shell")
-
 				shortcut = shell.CreateShortCut(path)
 				shortcut.Targetpath = target
 				shortcut.IconLocation = target
@@ -439,8 +437,8 @@ class Updater:
 		__create(principal_exe_name)
 		self.parent.set_statusbar_percent(33)
 
-		__create('sync.exe')
+		__create('sync.exe', ' - Sincronia')
 		self.parent.set_statusbar_percent(66)
 
-		__create('atualizador.exe')
+		__create('atualizador.exe', ' - Atualizador')
 		self.parent.set_statusbar_percent(100)

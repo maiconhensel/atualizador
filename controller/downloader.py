@@ -10,8 +10,6 @@ from requests.auth import HTTPBasicAuth
 from requests.adapters import HTTPAdapter
 
 from datetime import datetime
-#from lx.lxtypes import TString, TInteger
-
 
 class Downloader:
 	def __init__(self, ws, parent=None):
@@ -46,8 +44,11 @@ class Downloader:
 			main_folder: Se for True os arquivos serão baixados dentro da subpasta 'update' no diretório do sistema,
 			para posteriomente mover para a pasta principal, quando a atualização for aceita pelo usuário.
 		"""
-		#self.ws.services['config'].save_config({'atualizacao_versao_baixada': False})
-		#subprocess.call('"%s" psql -p 5470 -U postgres -c "%s" postgres' % (abspath('./pgsql/bin/'), sql), stdout=sys.stdout, stderr=sys.stdout)
+		try:
+			self.ws.dbs['public'].execute("update config_local set valor = false where chave = 'atualizacao_versao_baixada'")
+		except Exception as e:
+			self.ws.log.error("Ocorreu um erro ao atualizar a chave 'atualizacao_versao_baixada' da tabela config_local")
+			self.ws.log.error(traceback.format_exc())
 
 		self.ws.log.info("Baixando arquivos do servidor no diretório %s" % self.main_dir)
 		self.ws.log.info("---------------------------------")
@@ -69,7 +70,11 @@ class Downloader:
 		self.ws.log.info("Todos os arquivos foram baixados.")
 
 		if self.ws.dbs.get('public'):
-			self.ws.dbs['public'].execute("update config_local set valor = true where chave = 'atualizacao_versao_baixada'")
+			try:
+				self.ws.dbs['public'].execute("update config_local set valor = true where chave = 'atualizacao_versao_baixada'")
+			except Exception as e:
+				self.ws.log.error("Ocorreu um erro ao atualizar a chave 'atualizacao_versao_baixada' da tabela config_local")
+				self.ws.log.error(traceback.format_exc())
 
 		self.ws.log.info('Download dos arquivos da nova versão foram concluídos.')
 		return True
@@ -183,7 +188,7 @@ class Downloader:
 		if not version_list:
 			raise Exception("Nao existe versao liberada na chave para a UF %r (%s)" % (self.ws.key['empresa_uf'], sys.platform))
 
-		self.ws.log.debug("Versoes liberadas na chave: %s" % version_list)
+		self.ws.log.info("Versões liberadas na chave: %s" % version_list)
 
 		version_list_sort = [[int(x) for x in v.split(".")] for v in version_list]
 		version_list_sort.sort()
@@ -200,7 +205,7 @@ class Downloader:
 				continue
 
 			else:
-				self.ws.log.error('Retorno do servidor %s' % req.status_code)
+				self.ws.log.error("Code	  : {} - {}".format(req.status_code, req.reason))
 				raise Exception("Erro ao validar validar versao no servidor, verifique sua conexao com a internet.")
 
 		self.ws.log.info('Versao definida: %s' % version)

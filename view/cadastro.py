@@ -9,7 +9,6 @@ import threading
 from tkinter import Tk, Toplevel, LabelFrame, Label, Entry, Button, StringVar, messagebox
 from tkinter.ttk import Separator
 
-#import pygubu
 from PIL import Image, ImageTk
 from utils import valida_cnpj
 from core.key import PRODUTO_INTRANET_MAP
@@ -183,23 +182,12 @@ class CadastroApp:
 		for k in list(self.bt_produto_map.keys()):
 			self.bt_produto_map.pop(k)[0].destroy()
 
-		#CMW = CustomMessageWidget(self.mainwindow)
-		#CMW = Custom2App('')
-		#CMW.show_message("Baixando chave de ativação!")
-		#CMW.run()
-		#msg_win = wait(self.mainwindow, 'Baixando chave de ativação')
-		#time.sleep(5)
-
 		try:
 			resposta_dict = self.get_cliente(cnpj)
 			self.cliente_dict = resposta_dict['clientes'][0]
-			#self.ws.download_key({'empresa_cnpj': cnpj, 'senha': senha, 'host_name': self.ws.hostname, 'host_key': self.ws.sys_key})
-			#msg_win.destroy()
 		except Exception as e:
 			self.cliente_dict = {}
 			self.ws.log.error(traceback.format_exc())
-			#CMW.destroy()
-			#sg_win.destroy()
 			self.show_message_error(str(e))
 			return
 

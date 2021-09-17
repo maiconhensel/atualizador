@@ -29,7 +29,6 @@ class ProgressApp:
 	def configure(self):
 
 		# Main widget
-		#self.mainwindow = Tk()
 		self.mainwindow = Tk() if self.master is None else Toplevel(self.master)
 
 		if not self.visible:
@@ -38,8 +37,7 @@ class ProgressApp:
 		self.frame2 = Frame(self.mainwindow)
 		self.label1 = Label(self.frame2)
 
-		self.mainwindow.resizable(1,  1)
-		self.mainwindow.overrideredirect(1)
+		self.mainwindow.resizable(False,  False)
 
 		img = Image.open(os.sep.join([getattr(sys, '_MEIPASS', '.'), 'resources', 'logo-linx.png']))
 		self.logolinx_png = PhotoImage(img)
@@ -144,7 +142,7 @@ class ProgressApp:
 		self.status_progress.set(value)
 
 	def set_status_txt(self, text):
-		self.status_txt.set(text)
+		self.status_txt.set(('...' if len(text) > 93 else '') + text[-90:])
 	
 	def set_produto_txt(self, text):
 		self.produto_txt.set(text)

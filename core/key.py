@@ -68,7 +68,7 @@ APP_EXE_NAME_MAP = {
 	JETOIL_APP: 'jetoil.exe',
 	KDS_APP: 'kds.exe',
 	AUTOATENDIMENTO_APP: 'autoatendimento.exe',
-	TERMINAL_COMANDA_APP: 'terminal_comanda.exe',
+	TERMINAL_COMANDA_APP: 'terminalcomanda.exe',
 }
 
 # Bandeiras
