@@ -308,7 +308,11 @@ class CadastroApp:
 			self.ws.log.info("-RESPONSE - recebido em %.02f segundos." % (time.time() - tini))
 
 			if response.status_code != 200:
-				self.ws.log.critical("Status code retornado pelo webservice %s" % str(response.status_code))
+				self.ws.log.critical("Retorno do webservice: status_code=%s, reason=%s" % (str(response.status_code), response.reason))
+				import pdb; pdb.set_trace()
+				if response.status_code == 400:
+					raise Exception("CNPJ não encontrado")
+
 				raise Exception("Webservice retornou uma resposta inválida")
 
 			self.ws.log.info(f"{response.text}")
@@ -317,7 +321,7 @@ class CadastroApp:
 			return json.loads(response.text)
 		except:
 			self.ws.log.error(traceback.format_exc())
-			raise Exception('Ocorreu um erro ao consultar o cliente.')
+			raise
 
 if __name__ == '__main__':
 	from utils.ws import WS
