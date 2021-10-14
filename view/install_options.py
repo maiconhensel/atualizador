@@ -60,7 +60,7 @@ class InstallOptions(simpledialog.Dialog):
 		return toplevel2
 
 	def find_directory(self):
-		selected_dir = filedialog.Directory(self, title="teste").show()
+		selected_dir = filedialog.Directory(self, title="Diretório de instalação").show()
 		self.ws.log.info("Diretório selecionado '%r'" % selected_dir)
 		if selected_dir:
 			self.install_dir.set(selected_dir.replace('/', os.sep))

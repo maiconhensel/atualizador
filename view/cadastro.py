@@ -151,10 +151,10 @@ class CadastroApp:
 		bt_name = 'bt_%s' % bt_name
 		img_name = 'bt_img_%s' % bt_name
 
-		def teste():
+		def install():
 			self.bt_instalar_clicked(produto_dict)
 
-		button = Button(self.labelframe4, command=teste)
+		button = Button(self.labelframe4, command=install)
 
 		width = height = 60
 		img = Image.open(os.sep.join([getattr(sys, '_MEIPASS', '.'), 'resources', 'logo_linx.png']))
@@ -309,7 +309,7 @@ class CadastroApp:
 
 			if response.status_code != 200:
 				self.ws.log.critical("Retorno do webservice: status_code=%s, reason=%s" % (str(response.status_code), response.reason))
-				import pdb; pdb.set_trace()
+
 				if response.status_code == 400:
 					raise Exception("CNPJ não encontrado")
 
